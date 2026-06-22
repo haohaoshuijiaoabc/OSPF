@@ -113,9 +113,14 @@ public class Graph {
             adjList.put(id, new ArrayList<>());
         }
         for (Edge e : edges.values()) {
-            List<Neighbor> list = adjList.get(e.getFrom());
-            if (list != null) {
-                list.add(new Neighbor(e.getTo(), e.getCost()));
+            // 无向图：两个方向都要加入邻接表
+            List<Neighbor> listA = adjList.get(e.getFrom());
+            if (listA != null) {
+                listA.add(new Neighbor(e.getTo(), e.getCost()));
+            }
+            List<Neighbor> listB = adjList.get(e.getTo());
+            if (listB != null) {
+                listB.add(new Neighbor(e.getFrom(), e.getCost()));
             }
         }
     }
