@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSPF协议仿真系统 - OSPF Protocol Simulation</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <header id="header">
+        <div class="header-left">
+            <h1>OSPF协议仿真系统</h1>
+            <span class="subtitle">Open Shortest Path First — Dijkstra算法实现</span>
+        </div>
+        <div class="header-right">
+            <span id="status-indicator" class="status-ready">● 就绪</span>
+        </div>
+    </header>
+
+    <!-- 主布局 -->
+    <div id="main-container">
+
+        <!-- 左侧控制面板 -->
+        <aside id="left-panel">
+            <div class="panel-section">
+                <h3>🔧 拓扑编辑器</h3>
+
+                <div class="control-group">
+                    <label>操作模式</label>
+                    <div class="btn-group mode-group">
+                        <button id="mode-select" class="btn btn-mode active" data-mode="select">🖱 选择/移动</button>
+                        <button id="mode-addnode" class="btn btn-mode" data-mode="addnode">➕ 添加节点</button>
+                        <button id="mode-addedge" class="btn btn-mode" data-mode="addedge">🔗 添加链路</button>
+                        <button id="mode-delete" class="btn btn-mode" data-mode="delete">❌ 删除</button>
+                    </div>
+                </div>
+
+                <div class="control-group" id="addedge-controls" style="display:none;">
+                    <label>链路代价 (Cost)</label>
+                    <input type="number" id="edge-cost" value="1" min="1" max="65535" step="1">
+                    <p class="hint">在画布上依次点击两个节点来添加链路</p>
+                </div>
+
+                <div class="control-group">
+                    <label>快速操作</label>
+                    <button id="btn-preset1" class="btn btn-secondary">📋 载入示例拓扑</button>
+                    <button id="btn-clear" class="btn btn-danger">🗑 清空拓扑</button>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>📊 Dijkstra算法</h3>
+
+                <div class="control-group">
+                    <label>源节点 (Source Router)</label>
+                    <select id="source-node-select">
+                        <option value="">-- 请先添加节点 --</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <button id="btn-run-dijkstra" class="btn btn-primary">🚀 运行Dijkstra算法</button>
+                    <button id="btn-run-all" class="btn btn-primary-outline">📋 计算全部路由表</button>
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" id="show-step" checked>
+                        显示计算步骤
+                    </label>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>ℹ️ 操作说明</h3>
+                <ul class="help-list">
+                    <li><b>添加节点:</b> 选择"添加节点"模式，点击画布</li>
+                    <li><b>添加链路:</b> 选择"添加链路"模式，依次点击两个节点</li>
+                    <li><b>移动节点:</b> 选择"选择/移动"模式，拖拽节点</li>
+                    <li><b>删除:</b> 选择"删除"模式，点击节点或链路</li>
+                    <li><b>修改代价:</b> 双击链路上的代价数字</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- 中间画布区域 -->
+        <main id="canvas-area">
+            <div id="canvas-wrapper">
+                <canvas id="topology-canvas"></canvas>
+                <div id="canvas-hint" class="canvas-hint-visible">
+                    <p>选择 <b>"添加节点"</b> 模式开始构建网络拓扑</p>
+                    <p>或点击 <b>"载入示例拓扑"</b> 快速体验</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- 右侧结果面板 -->
+        <aside id="right-panel">
+            <div class="panel-section">
+                <h3>📋 路由表 (Routing Table)</h3>
+                <div id="routing-table-container">
+                    <p class="placeholder-text">请先运行Dijkstra算法</p>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>📐 算法步骤 (Steps)</h3>
+                <div id="steps-container">
+                    <p class="placeholder-text">请先运行Dijkstra算法</p>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>📝 链路状态数据库 (LSDB)</h3>
+                <div id="lsdb-container">
+                    <p class="placeholder-text">当前拓扑的链路状态信息</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <footer id="footer">
+        <span>节点数: <b id="footer-nodes">0</b></span>
+        <span>链路数: <b id="footer-edges">0</b></span>
+        <span>当前模式: <b id="footer-mode">选择/移动</b></span>
+    </footer>
+
+    <!-- 修改代价弹窗 -->
+    <div id="cost-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>修改链路代价</h3>
+            <p id="cost-modal-info"></p>
+            <input type="number" id="cost-modal-input" value="1" min="1" max="65535" step="1">
+            <div class="modal-buttons">
+                <button id="cost-modal-confirm" class="btn btn-primary">确认</button>
+                <button id="cost-modal-cancel" class="btn btn-secondary">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/ospf.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
